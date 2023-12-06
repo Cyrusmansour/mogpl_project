@@ -28,21 +28,6 @@ class Graph:
 		print("Arete\t\tDist. depuis source")
 		for i in range(self.V):
 			print("{0}\t\t{1}".format(i, dist[i]))
-   
-	def hasNegativeCycle(self):
-		"""Verifie la presence de circuit negatif dans le graphe"""
-		dist = [float("Inf")] * self.V
-		dist[0] = 0
-		for _ in range(self.V - 1):
-			# Verifie si les distances sont mise a jour
-			for u, v, w in self.graph:
-				if dist[u] != float("Inf") and dist[u] + w < dist[v]:
-					dist[v] = dist[u] + w
-		# Verifie la presence de circuit negatif
-		for u, v, w in self.graph:
-			if dist[u] != float("Inf") and dist[u] + w < dist[v]:
-				return True
-		return False
 
 	def generateRandWeight(self):
 		"""Génère des poids aléatoires dans l'intervalle [-10, 10] pour toutes les arêtes"""
@@ -81,6 +66,16 @@ class Graph:
 			if not is_updated:
 				break  # Stop s'il n'y a pas eu de mise à jour de distance
 			iterations += 1
+
+		# Vérification de la présence de circuit négatif
+			if is_updated:
+				# Une mise à jour s'est produite à la (V-1)-ème itération, ce qui indique la possibilité d'un cycle négatif
+            	# Effectuer une itération supplémentaire pour détecter quelles distances sont mises à jour
+				for u, v, w in self.graph:
+					# Il y a une mise à jour à cette itération, indiquant la présence d'un cycle négatif
+					if dist[u] != float("Inf") and dist[u] + w < dist[v]:
+						print("Erreur: Le graphe contient un cycle négatif.")
+						return
 
 		# Affichage
 		self.printArr(dist)
