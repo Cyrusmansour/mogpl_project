@@ -70,7 +70,7 @@ class Graph:
 		# Vérification de la présence de circuit négatif
 			if is_updated:
 				# Une mise à jour s'est produite à la (V-1)-ème itération, ce qui indique la possibilité d'un cycle négatif
-            	# Effectuer une itération supplémentaire pour détecter quelles distances sont mises à jour
+            			# Effectuer une itération supplémentaire pour détecter quelles distances sont mises à jour
 				for u, v, w in self.graph:
 					# Il y a une mise à jour à cette itération, indiquant la présence d'un cycle négatif
 					if dist[u] != float("Inf") and dist[u] + w < dist[v]:
