@@ -6,6 +6,17 @@ def createPairs(lst):
 		pairs.append([lst[i], lst[i+1]])
 	return pairs
 
+def remove_duplicates(lst):
+				i = 0
+				while i < len(lst):
+					j = i + 1
+					while j < len(lst):
+						if lst[i][0] == lst[j][0] and lst[i][1] == lst[j][1]:
+							lst.remove(lst[j])
+						else:
+							j += 1
+					i += 1
+
 class Graph:
 	def __init__(self, vertices):
 		"""Initialisation"""
@@ -205,36 +216,42 @@ def unionGraphs(graph1, graph2, graph3):
 			finalGraph.addEdge(edge1[0], edge1[1], edge1[2])
 			finalGraph.addEdge(edge2[0], edge2[1], edge2[2])
 			finalGraph.addEdge(edge3[0], edge3[1], edge3[2])
+			
+		remove_duplicates(finalGraph.graph)
 	return finalGraph
 
 
 
 # Génération du graphe G
-G = Graph(5)
+G = Graph(6)
 G.addEdge(0, 1, 0)
 G.addEdge(0, 2, 0)
 G.addEdge(0, 4, 0)
-G.addEdge(1, 3, 0)
-G.addEdge(2, 3, 0)
-G.addEdge(3, 4, 0)
+G.addEdge(1, 4, 0)
+G.addEdge(2, 1, 0)
+G.addEdge(2, 4, 0)
+G.addEdge(2, 5, 0)
+G.addEdge(4, 5, 0)
+G.addEdge(5, 3, 0)
+
 	
 # Sommet 0 comme source car il permet d'atteindre au moins |V|/2 sommets
 source = 0
 
 # Génération des poids aléatoires pour G1, G2, G3, et H
-G1 = Graph(5)
+G1 = Graph(6)
 G1.graph = [edge.copy() for edge in G.graph]
 G1.generateRandWeight()
 
-G2 = Graph(5)
+G2 = Graph(6)
 G2.graph = [edge.copy() for edge in G.graph]
 G2.generateRandWeight()
 
-G3 = Graph(5)
+G3 = Graph(6)
 G3.graph = [edge.copy() for edge in G.graph]
 G3.generateRandWeight()
 
-H = Graph(5)
+H = Graph(6)
 H.graph = [edge.copy() for edge in G.graph]
 H.generateRandWeight()
 
