@@ -6,6 +6,17 @@ def createPairs(lst):
 		pairs.append([lst[i], lst[i+1]])
 	return pairs
 
+def remove_duplicates(lst):
+				i = 0
+				while i < len(lst):
+					j = i + 1
+					while j < len(lst):
+						if lst[i][0] == lst[j][0] and lst[i][1] == lst[j][1]:
+							lst.remove(lst[j])
+						else:
+							j += 1
+					i += 1
+
 class Graph:
 	def __init__(self, vertices):
 		"""Initialisation"""
@@ -207,6 +218,8 @@ def unionGraphs(graph1, graph2, graph3):
 			finalGraph.addEdge(edge1[0], edge1[1], edge1[2])
 			finalGraph.addEdge(edge2[0], edge2[1], edge2[2])
 			finalGraph.addEdge(edge3[0], edge3[1], edge3[2])
+			
+		remove_duplicates(finalGraph.graph)
 	return finalGraph
 
 
