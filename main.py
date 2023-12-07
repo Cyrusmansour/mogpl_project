@@ -6,16 +6,16 @@ def createPairs(lst):
 		pairs.append([lst[i], lst[i+1]])
 	return pairs
 
-def remove_duplicates(lst):
-				i = 0
-				while i < len(lst):
-					j = i + 1
-					while j < len(lst):
-						if lst[i][0] == lst[j][0] and lst[i][1] == lst[j][1]:
-							lst.remove(lst[j])
-						else:
-							j += 1
-					i += 1
+def removeDupes(lst):
+	i = 0
+	while i < len(lst):
+		j = i + 1
+		while j < len(lst):
+			if lst[i][0] == lst[j][0] and lst[i][1] == lst[j][1]:
+				lst.remove(lst[j])
+			else:
+				j += 1
+		i += 1
 
 class Graph:
 	def __init__(self, vertices):
@@ -40,10 +40,42 @@ class Graph:
 		for i in range(self.V):
 			print("{0}\t\t{1}".format(i, dist[i]))
 
+	def hasNegativeCycle(self):
+		"""Verifie la presence de circuit negatif dans le graphe"""
+		dist = [float("Inf")] * self.V
+		dist[0] = 0
+		for _ in range(self.V - 1):
+			# Verifie si les distances sont mise a jour
+			for u, v, w in self.graph:
+				if dist[u] != float("Inf") and dist[u] + w < dist[v]:
+					dist[v] = dist[u] + w
+		# Verifie la presence de circuit negatif
+		for u, v, w in self.graph:
+			if dist[u] != float("Inf") and dist[u] + w < dist[v]:
+				return True
+		return False
+
 	def generateRandWeight(self):
 		"""Génère des poids aléatoires dans l'intervalle [-10, 10] pour toutes les arêtes"""
 		for edge in self.graph:
 			edge[2] = random.randint(-10, 10)
+		while self.hasNegativeCycle():
+			for edge in self.graph:
+				edge[2] = random.randint(-10, 10)
+    
+	def setSource(self):
+		"""Renvoie le premier sommet qui atteint au moins la moitié des sommets du graphe"""
+		num_vertices = self.V  # Nombre de sommets du graphe
+		threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets
+		for vertex in range(num_vertices):
+			count = 0  # Compteur pour le nombre de sommets atteints
+			for edge in self.graph:
+				if edge[0] == vertex or edge[1] == vertex:
+					count += 1
+			if count >= threshold:
+				return vertex
+		print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
+		return None
 
 	def graphArborescence(self, s):
 		t= []
@@ -197,7 +229,7 @@ def unionGraphs(graph1, graph2, graph3):
 			finalGraph.addEdge(edge2[0], edge2[1], edge2[2])
 			finalGraph.addEdge(edge3[0], edge3[1], edge3[2])
 			
-		remove_duplicates(finalGraph.graph)
+		removeDupes(finalGraph.graph)
 	return finalGraph
 
 
@@ -304,7 +336,3 @@ G1.addEdge(3, 0, 4)
 i, s = G1.BellmanFord(0)
 print("S:", s.graph)
 """
-
-
-
-
