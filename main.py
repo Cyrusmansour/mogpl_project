@@ -107,76 +107,54 @@ class Graph:
 				shortest_paths_tree[vertex] = path  # Ajoute le chemin à l'arborescence
 		arbo = self.graphArborescence(shortest_paths_tree)
 		return iterations, arbo
+	
+	def GloutonFas(graph):
+		def find_sources_and_sinks(graph):
+			in_degrees = {i: 0 for i in range(graph.V)}
+			out_degrees = {i: 0 for i in range(graph.V)}
 
+			for edge in graph.graph:
+				out_degrees[edge[0]] += 1
+				in_degrees[edge[1]] += 1
+			
+			sources = {i for i in out_degrees if out_degrees[i] > 0 and in_degrees[i] == 0}
+			sinks = {i for i in in_degrees if in_degrees[i] > 0 and out_degrees[i] == 0}
+			return sources, sinks
 
-	def GloutonFas(self):
-		"""Application de l'algorithme GloutonFas"""
-		# Initialisation
+		def calculate_delta(u):
+			in_degree = sum(1 for edge in graph.graph if edge[1] == u)
+			out_degree = sum(1 for edge in graph.graph if edge[0] == u)
+			return out_degree - in_degree
+
 		s1 = []
 		s2 = []
 
-		# Conversion du graphe en représentation d'adjacence
-		adj_list = {}
-		in_degree = {}
-		out_degree = {}
+		while graph.graph:
+			sources, sinks = find_sources_and_sinks(graph)
 
-		for edge in self.graph:
-			u, v, _ = edge  # Ignore weights for this algorithm
-			if u not in adj_list:
-				adj_list[u] = []
-				in_degree[u] = 0
-				out_degree[u] = 0
-			if v not in adj_list:
-				adj_list[v] = []
-				in_degree[v] = 0
-				out_degree[v] = 0
+			while sources:
+				u = sources.pop()
+				s1.append(u)
+				graph.graph = [edge for edge in graph.graph if edge[0] != u]
 
-			adj_list[u].append(v)
-			out_degree[u] += 1
-			in_degree[v] += 1
+			while sinks:
+				u = sinks.pop()
+				s2.insert(0, u)
+				graph.graph = [edge for edge in graph.graph if edge[1] != u]
 
-		# Fonction pour choisir le sommet avec la différence maximale 
-		# entre son degré sortant et son degré entrant (ici noté delta)
-		def choose_vertex():
-			max_delta = float("-inf")
-			chosen_vertex = None
+			if graph.graph:
+				u = max(graph.graph, key=lambda x: calculate_delta(x[0]))
+				if u[0] not in s1 and u[0] not in s2:
+					s1.append(u[0])
+				graph.graph = [edge for edge in graph.graph if edge[0] != u[0]]
 
-			for vertex in adj_list:
-				delta = out_degree[vertex] - in_degree[vertex]
-				if delta > max_delta:
-					max_delta = delta
-					chosen_vertex = vertex
+		s = s1 + s2
+		result = []
+		for i in s:
+			if i not in result:
+				result.append(i)
 
-			return chosen_vertex
-
-		# Algorithme GloutonFast
-		while adj_list:
-			# Traitement des sources
-			sources = [vertex for vertex in adj_list if in_degree[vertex] == 0]
-			for source in sources:
-				s1.append(source)
-				for neighbor in adj_list[source]:
-					in_degree[neighbor] -= 1
-				del adj_list[source]
-
-			# Traitement des puits
-			sinks = [vertex for vertex in adj_list if out_degree[vertex] == 0]
-			for sink in sinks:
-				s2.insert(0, sink)
-				for neighbor in adj_list[sink]:
-					out_degree[neighbor] -= 1
-				del adj_list[sink]
-
-			# Choisir et retirer le sommet avec le plus grand delta
-			chosen_vertex = choose_vertex()
-			if chosen_vertex is not None:
-				s1.append(chosen_vertex)
-				for neighbor in adj_list[chosen_vertex]:
-					in_degree[neighbor] -= 1
-					out_degree[chosen_vertex] -= 1
-				del adj_list[chosen_vertex]
-
-		return s1 + s2
+		return result
 	
 def unionGraphs(graph1, graph2, graph3):
 	# Création du graphe final
@@ -225,35 +203,39 @@ def unionGraphs(graph1, graph2, graph3):
 
 
 # Génération du graphe G
-G = Graph(6)
+G = Graph(8)
 G.addEdge(0, 1, 0)
 G.addEdge(0, 2, 0)
-G.addEdge(0, 4, 0)
-G.addEdge(1, 4, 0)
-G.addEdge(2, 1, 0)
-G.addEdge(2, 4, 0)
-G.addEdge(2, 5, 0)
-G.addEdge(4, 5, 0)
-G.addEdge(5, 3, 0)
-
+G.addEdge(1, 2, 0)
+G.addEdge(2, 3, 0)
+G.addEdge(3, 4, 0)
+G.addEdge(3, 5, 0)
+G.addEdge(3, 6, 0)
+G.addEdge(4, 6, 0)
+G.addEdge(5, 4, 0)
+G.addEdge(5, 7, 0)
+G.addEdge(6, 0, 0)
+G.addEdge(7, 1, 0)
+G.addEdge(7, 2, 0)
 	
 # Sommet 0 comme source car il permet d'atteindre au moins |V|/2 sommets
 source = 0
 
+"""
 # Génération des poids aléatoires pour G1, G2, G3, et H
-G1 = Graph(6)
+G1 = Graph(8)
 G1.graph = [edge.copy() for edge in G.graph]
 G1.generateRandWeight()
 
-G2 = Graph(6)
+G2 = Graph(8)
 G2.graph = [edge.copy() for edge in G.graph]
 G2.generateRandWeight()
 
-G3 = Graph(6)
+G3 = Graph(8)
 G3.graph = [edge.copy() for edge in G.graph]
 G3.generateRandWeight()
 
-H = Graph(6)
+H = Graph(8)
 H.graph = [edge.copy() for edge in G.graph]
 H.generateRandWeight()
 
@@ -276,8 +258,10 @@ print(s1.graph)
 print(s2.graph)
 print(s3.graph)
 
-S = unionGraphs(s1,s2,s3)
-print("Union:", S.graph)
+T = unionGraphs(s1,s2,s3)
+print("Union:", T.graph)
+
+print("GloutonFas sur T:", T.GloutonFas())"""
 
 		
 
