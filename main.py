@@ -64,7 +64,7 @@ class Graph:
 				edge[2] = random.randint(-10, 10)
     
 	def setSource(self):
-		"""Renvoie le premier sommet qui atteint au moimns la moitié des sommets du graph"""
+		"""Renvoie le premier sommet qui atteint au moins la moitié des sommets du graphe"""
 		num_vertices = self.V  # Nombre de sommets du graphe
 		threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets
 		for vertex in range(num_vertices):
