@@ -152,13 +152,9 @@ class Graph:
 		for edge in self.graph:
 			out_degrees[edge[0]] += 1
 			in_degrees[edge[1]] += 1
-		print("out_degrees:", out_degrees)
-		print("in_degrees:", in_degrees)
 		for i in range(len(out_degrees)):
 			if out_degrees[i] > 0 and in_degrees[i] == 0: sources.append(i)
 			if in_degrees[i] > 0 and out_degrees[i] == 0: sinks.append(i)
-		#sources = [i for i in out_degrees if out_degrees[i] > 0 and in_degrees[i] == 0]
-		#sinks = [i for i in in_degrees if in_degrees[i] > 0 and out_degrees[i] == 0]
 		return sources, sinks
 
 	def calculate_delta(self,u):
@@ -176,41 +172,25 @@ class Graph:
 
 		while self.graph:
 			sources, sinks = self.find_sources_and_sinks()
-			print("sources:", sources); print("sinks:", sinks)
 			if sources:
 				while sources:
 					e = sources.pop()		#! si plusieurs sources, l'ordre n'influe pas sur le résultat
-					print("e:", e)
 					s1.append(e)
-					#sources.remove(e)
-					print("sources:", sources)
 					self.graph = [edge for edge in self.graph if (edge[0] != e)]
 					sources, _ = self.find_sources_and_sinks()
 			if sinks:
 				while sinks:
 					e = sinks.pop()
 					s2.insert(0,e)
-					#sinks.remove(e)
 					self.graph = [edge for edge in self.graph if (edge[1] != e)]
 					_, sinks = self.find_sources_and_sinks()
-			print("graph actualisé:", self.graph)
-			print("s1:", s1); print("s2:", s2)
 			if self.graph:
 				u = max(self.graph, key=lambda x: self.calculate_delta(x[0]))
-				print("u:",u)
 				if u[0] not in s1 and u[0] not in s2:
 					s1.append(u[0])
 					self.graph = [edge for edge in self.graph if (edge[0] != u[0] and edge[1] != u[0])]
-				print(self.graph,"\n")
 			
-
-		s = s1 + s2
-		result = []
-		for i in s:
-			if i not in result:
-				result.append(i)
-
-		return s1,s2,s, result
+		return s1 + s2
 	
 def unionGraphs(graph1, graph2, graph3):
 	# Création du graphe final
@@ -273,20 +253,20 @@ def unionGraphs(graph1, graph2, graph3):
 # G.addEdge(5, 6, 0)
 # G.addEdge(6, 0, 0)
 
-G = Graph(8)
-G.addEdge(0, 1, 0)
-G.addEdge(0, 2, 0)
-G.addEdge(1, 2, 0)
-G.addEdge(2, 3, 0)
-G.addEdge(3, 4, 0)
-G.addEdge(3, 5, 0)
-G.addEdge(3, 6, 0)
-G.addEdge(4, 6, 0)
-G.addEdge(5, 4, 0)
-G.addEdge(5, 7, 0)
-G.addEdge(6, 0, 0)
-G.addEdge(7, 1, 0)
-G.addEdge(7, 2, 0)
+# G = Graph(8)
+# G.addEdge(0, 1, 0)
+# G.addEdge(0, 2, 0)
+# G.addEdge(1, 2, 0)
+# G.addEdge(2, 3, 0)
+# G.addEdge(3, 4, 0)
+# G.addEdge(3, 5, 0)
+# G.addEdge(3, 6, 0)
+# G.addEdge(4, 6, 0)
+# G.addEdge(5, 4, 0)
+# G.addEdge(5, 7, 0)
+# G.addEdge(6, 0, 0)
+# G.addEdge(7, 1, 0)
+# G.addEdge(7, 2, 0)
 
 # G = Graph(5)
 # G.addEdge(0, 1, 0)
@@ -298,17 +278,7 @@ G.addEdge(7, 2, 0)
 # G.addEdge(3, 4, 0)
 # G.addEdge(4, 0, 0)
 
-# print(G.find_sources_and_sinks())
-# for e in range (G.V):
-# 	print(G.calculate_delta(e))
-s1,s2,s, result = G.GloutonFas()
-print("s1: ", s1)
-print("s2: ", s2)
-print("s: ", s)
-print("result: ", result)
-#print(G.setSource())
-# Sommet 0 comme source car il permet d'atteindre au moins |V|/2 sommets
-source = 0
+print("GloutonFas sur G:", G.GloutonFas())
 
 """
 # Génération des poids aléatoires pour G1, G2, G3, et H
