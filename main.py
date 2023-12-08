@@ -66,16 +66,21 @@ class Graph:
 	def setSource(self):
 		"""Renvoie le premier sommet qui atteint au moins la moitié des sommets du graphe"""
 		num_vertices = self.V  # Nombre de sommets du graphe
-		threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets
+		threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets 
+		v = []	# liste pour stocker tous les sommets candidats 
 		for vertex in range(num_vertices):
 			count = 0  # Compteur pour le nombre de sommets atteints
 			for edge in self.graph:
-				if edge[0] == vertex or edge[1] == vertex:
+				if edge[0] == vertex:
 					count += 1
 			if count >= threshold:
-				return vertex
-		print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
-		return None
+				v.append((vertex, count))
+		if v:
+			res = max(v, key=lambda x: x[1])[0]	# on selectionne le sommet avec le plus d'aretes sortantes parmi celles au dessus du threshold
+			return res
+		else:
+			print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
+			return None
 
 	def graphArborescence(self, s):
 		t= []
@@ -139,46 +144,65 @@ class Graph:
 				shortest_paths_tree[vertex] = path  # Ajoute le chemin à l'arborescence
 		arbo = self.graphArborescence(shortest_paths_tree)
 		return iterations, arbo
+
+	def find_sources_and_sinks(self):
+		in_degrees = [0 for i in range(self.V)]
+		out_degrees = [0 for i in range(self.V)]
+		sources = []; sinks = []
+		for edge in self.graph:
+			out_degrees[edge[0]] += 1
+			in_degrees[edge[1]] += 1
+		print("out_degrees:", out_degrees)
+		print("in_degrees:", in_degrees)
+		for i in range(len(out_degrees)):
+			if out_degrees[i] > 0 and in_degrees[i] == 0: sources.append(i)
+			if in_degrees[i] > 0 and out_degrees[i] == 0: sinks.append(i)
+		#sources = [i for i in out_degrees if out_degrees[i] > 0 and in_degrees[i] == 0]
+		#sinks = [i for i in in_degrees if in_degrees[i] > 0 and out_degrees[i] == 0]
+		return sources, sinks
+
+	def calculate_delta(self,u):
+		in_degree = sum(1 for edge in self.graph if edge[1] == u)
+		out_degree = sum(1 for edge in self.graph if edge[0] == u)
+		return out_degree - in_degree
+
 	
-	def GloutonFas(graph):
-		def find_sources_and_sinks(graph):
-			in_degrees = {i: 0 for i in range(graph.V)}
-			out_degrees = {i: 0 for i in range(graph.V)}
 
-			for edge in graph.graph:
-				out_degrees[edge[0]] += 1
-				in_degrees[edge[1]] += 1
-			
-			sources = {i for i in out_degrees if out_degrees[i] > 0 and in_degrees[i] == 0}
-			sinks = {i for i in in_degrees if in_degrees[i] > 0 and out_degrees[i] == 0}
-			return sources, sinks
 
-		def calculate_delta(u):
-			in_degree = sum(1 for edge in graph.graph if edge[1] == u)
-			out_degree = sum(1 for edge in graph.graph if edge[0] == u)
-			return out_degree - in_degree
+	def GloutonFas(self):
 
 		s1 = []
 		s2 = []
 
-		while graph.graph:
-			sources, sinks = find_sources_and_sinks(graph)
-
-			while sources:
-				u = sources.pop()
-				s1.append(u)
-				graph.graph = [edge for edge in graph.graph if edge[0] != u]
-
-			while sinks:
-				u = sinks.pop()
-				s2.insert(0, u)
-				graph.graph = [edge for edge in graph.graph if edge[1] != u]
-
-			if graph.graph:
-				u = max(graph.graph, key=lambda x: calculate_delta(x[0]))
+		while self.graph:
+			sources, sinks = self.find_sources_and_sinks()
+			print("sources:", sources); print("sinks:", sinks)
+			if sources:
+				while sources:
+					e = sources.pop()		#! si plusieurs sources, l'ordre n'influe pas sur le résultat
+					print("e:", e)
+					s1.append(e)
+					#sources.remove(e)
+					print("sources:", sources)
+					self.graph = [edge for edge in self.graph if (edge[0] != e)]
+					sources, _ = self.find_sources_and_sinks()
+			if sinks:
+				while sinks:
+					e = sinks.pop()
+					s2.insert(0,e)
+					#sinks.remove(e)
+					self.graph = [edge for edge in self.graph if (edge[1] != e)]
+					_, sinks = self.find_sources_and_sinks()
+			print("graph actualisé:", self.graph)
+			print("s1:", s1); print("s2:", s2)
+			if self.graph:
+				u = max(self.graph, key=lambda x: self.calculate_delta(x[0]))
+				print("u:",u)
 				if u[0] not in s1 and u[0] not in s2:
 					s1.append(u[0])
-				graph.graph = [edge for edge in graph.graph if edge[0] != u[0]]
+					self.graph = [edge for edge in self.graph if (edge[0] != u[0] and edge[1] != u[0])]
+				print(self.graph,"\n")
+			
 
 		s = s1 + s2
 		result = []
@@ -186,7 +210,7 @@ class Graph:
 			if i not in result:
 				result.append(i)
 
-		return result
+		return s1,s2,s, result
 	
 def unionGraphs(graph1, graph2, graph3):
 	# Création du graphe final
@@ -233,8 +257,22 @@ def unionGraphs(graph1, graph2, graph3):
 	return finalGraph
 
 
-
 # Génération du graphe G
+# G = Graph(7)
+# G.addEdge(0, 1, 0)
+# G.addEdge(0, 4, 0)
+# G.addEdge(0, 5, 0)
+# G.addEdge(1, 3, 0)
+# G.addEdge(1, 5, 0)
+# G.addEdge(2, 1, 0)
+# G.addEdge(3, 1, 0)
+# G.addEdge(3, 2, 0)
+# G.addEdge(3, 6, 0)
+# G.addEdge(3, 4, 0)
+# G.addEdge(4, 5, 0)
+# G.addEdge(5, 6, 0)
+# G.addEdge(6, 0, 0)
+
 G = Graph(8)
 G.addEdge(0, 1, 0)
 G.addEdge(0, 2, 0)
@@ -249,7 +287,26 @@ G.addEdge(5, 7, 0)
 G.addEdge(6, 0, 0)
 G.addEdge(7, 1, 0)
 G.addEdge(7, 2, 0)
-	
+
+# G = Graph(5)
+# G.addEdge(0, 1, 0)
+# G.addEdge(0, 3, 0)
+# G.addEdge(1, 4, 0)
+# G.addEdge(2, 1, 0)
+# G.addEdge(2, 3, 0)
+# G.addEdge(2, 4, 0)
+# G.addEdge(3, 4, 0)
+# G.addEdge(4, 0, 0)
+
+# print(G.find_sources_and_sinks())
+# for e in range (G.V):
+# 	print(G.calculate_delta(e))
+s1,s2,s, result = G.GloutonFas()
+print("s1: ", s1)
+print("s2: ", s2)
+print("s: ", s)
+print("result: ", result)
+#print(G.setSource())
 # Sommet 0 comme source car il permet d'atteindre au moins |V|/2 sommets
 source = 0
 
