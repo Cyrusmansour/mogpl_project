@@ -49,13 +49,13 @@ class Graph:
 	def printArr(self, dist):
 		"""Affichage de la solution"""
 		print("Arete\t\tDist. depuis source")
-		for i in range(len(dist)):
-			print("{0}\t\t{1}".format(i, dist[i]))
+		for vertex in dist.keys():
+			print("{0}\t\t{1}".format(vertex, dist[vertex]))
 
 	def hasNegativeCycle(self):
 		"""Verifie la presence de circuit negatif dans le graphe"""
-		dist = [float("Inf")] * self.getVertexCount()
-		dist[0] = 0
+		dist = { vertex: float("Inf") for vertex in self.vertices }
+		dist[self.setSource()] = 0
 		for _ in range(self.getVertexCount() - 1):
 			# Verifie si les distances sont mise a jour
 			for u, v, w in self.graph:
@@ -77,7 +77,7 @@ class Graph:
     
 	def generate_random_graph():
 		"""Génère un graphe aléatoire"""
-		num_vertices = random.randint(3, 10)  # Choisissez le nombre de sommets aléatoirement (entre 2 et 10 ici)
+		num_vertices = random.randint(4, 10)
 		graph = Graph()
 
 		for _ in range(random.randint(num_vertices, num_vertices * (num_vertices - 1) // 2)):
@@ -94,29 +94,57 @@ class Graph:
 		graph.graph = sorted_list
 		return graph
 
+	def countAccessibleVertexFrom(self, vertex):
+		accessible = [vertex]
+		edges = [edge for edge in self.graph if edge[1] != vertex ]
+		k = 0
+		while k < len(accessible):
+			# recuperer les noeuds enfants
+			childs = [ edge[1] for edge in edges if edge[0] == accessible[k]]
+			# remove all edges connected to the vertex
+			edges = [ edge for edge in edges if edge[0] != accessible[k] and edge[1] not in childs ]
+			accessible += childs
+			k += 1
+		return len(accessible) - 1
+
+	def hasSource(self):
+		threshold = self.getVertexCount() / 2
+		for vertex in self.vertices:
+			if self.countAccessibleVertexFrom(vertex) > threshold:
+				return True
+		return False
+
 	def setSource(self):
-		"""Renvoie le premier sommet qui atteint au moins la moitié des sommets du graphe"""
-		num_vertices = self.getVertexCount()  # Nombre de sommets du graphe
-		threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets 
-		v = []	# liste pour stocker tous les sommets candidats 
-		for vertex in self.vertices:#range(num_vertices):
-			count = 0  # Compteur pour le nombre de sommets atteints
-			for edge in self.graph:
-				if edge[0] == vertex:
-					count += 1
-			if count >= threshold:
-				v.append((vertex, count))
-		if v:
-			res = max(v, key=lambda x: x[1])[0]	# on selectionne le sommet avec le plus d'aretes sortantes parmi celles au dessus du threshold
-			return res
-		else:
-			print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
-			return None
+		threshold = self.getVertexCount() / 2
+		for vertex in self.vertices:
+			if self.countAccessibleVertexFrom(vertex) > threshold:
+				return vertex
+		print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
+		return None
+
+	# def setSource(self):
+	# 	"""Renvoie le premier sommet qui atteint au moins la moitié des sommets du graphe"""
+	# 	num_vertices = self.getVertexCount()  # Nombre de sommets du graphe
+	# 	threshold = num_vertices // 2  # Seuil pour atteindre la moitié des sommets 
+	# 	v = []	# liste pour stocker tous les sommets candidats 
+	# 	for vertex in self.vertices:#range(num_vertices):
+	# 		count = 0  # Compteur pour le nombre de sommets atteints
+	# 		for edge in self.graph:
+	# 			if edge[0] == vertex:
+	# 				count += 1
+	# 		if count >= threshold:
+	# 			v.append((vertex, count))
+	# 	if v:
+	# 		res = max(v, key=lambda x: x[1])[0]	# on selectionne le sommet avec le plus d'aretes sortantes parmi celles au dessus du threshold
+	# 		return res
+	# 	else:
+	# 		print("Erreur: aucun sommet n'atteint la moitié des sommets du graphe")
+	# 		return None
 
 	def graphArborescence(self, s):
 		t= []
 		G = Graph()
-		for e in s:
+		for e in s.values():
 			t.append(createPairs(e))
 		t = [pair for sublist in t for pair in sublist if sublist]	# on desimbrique les listes
 		t = list(set(map(tuple, t)))	# on garde une seule occurence de chaque element
@@ -127,7 +155,8 @@ class Graph:
 	def BellmanFord(self, src):
 		"""Application de l'algo de BellmanFord : renvoie les distances depuis la source + nb d'itérations + arborescence des plus courts chemins"""
 		# Initialisation des distances depuis la source aux autres sommets à l'infini
-		dist = [float("Inf")] * self.getVertexCount()
+		dist = { vertex: float("Inf") for vertex in self.vertices }
+		#dist = [float("Inf")] * self.getVertexCount()
 		dist[src] = 0
 
 		# Initialisation des prédécesseurs
@@ -146,23 +175,14 @@ class Graph:
 				break  # Stop s'il n'y a pas eu de mise à jour de distance
 			iterations += 1
 
-		# Vérification de la présence de circuit négatif
-			if is_updated:
-				# Une mise à jour s'est produite à la (V-1)-ème itération, ce qui indique la possibilité d'un cycle négatif
-            	# Effectuer une itération supplémentaire pour détecter quelles distances sont mises à jour
-				for u, v, w in self.graph:
-					# Il y a une mise à jour à cette itération, indiquant la présence d'un cycle négatif
-					if dist[u] != float("Inf") and dist[u] + w < dist[v]:
-						print("Erreur: Le graphe contient un cycle négatif.")
-						return
-
 		# Affichage
 		self.printArr(dist)
 		print("> Nb d'iterations:", iterations)
 
 		# Construction de l'arborescence des plus courts chemins
-		shortest_paths_tree = [[] for _ in range(self.getVertexCount())]  # Liste de listes pour stocker l'arborescence
-		for vertex in range(self.getVertexCount()):
+		# vertex -> chemin (list<vertex>)
+		shortest_paths_tree = { vertex: [] for vertex in self.vertices } # Liste de listes pour stocker l'arborescence
+		for vertex in self.vertices:
 			if vertex != src:
 				path = []
 				current_vertex = vertex
@@ -262,5 +282,21 @@ def unionGraphs(graph1, graph2, graph3):
 	return finalGraph
 
 G = Graph.generate_random_graph()
+while G.hasNegativeCycle() or G.setSource() == None:
+    G = Graph.generate_random_graph()
+# G = Graph()
+# G.addEdge(1, 0, 2)
+# G.addEdge(2, 7, 2)
+# G.addEdge(5, 2, -1) 
+# G.addEdge(5, 6, -6) 
+# G.addEdge(5, 7, -8) 
+# G.addEdge(6, 2, 6) 
+# G.addEdge(7, 0, -3) 
+# G.addEdge(7, 2, 3) 
+# G.addEdge(7, 5, -5) 
+# G.addEdge(8, 0, -6) 
+# G.addEdge(8, 5, -3)
 print("G:", G.graph)
-print("GloutonFas sur G:" , G.GloutonFas())
+s = G.setSource()
+iterations, arbo = G.BellmanFord(s)
+print("Arborescence + court chemin:",arbo.graph)
