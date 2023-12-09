@@ -290,35 +290,6 @@ def generateGraphFromG(G):
 
 # ------------------------------- TEST ---------------------------------
 
-# Generation d'un graphe aleatoire 
-G = generateGraph()
-G1 = generateGraphFromG(G)
-G2 = generateGraphFromG(G)
-G3 = generateGraphFromG(G)
-H = generateGraphFromG(G)
-# print("G:", G3.graph)
-# print("G1:", G.graph)
-# print("G2:", G1.graph)
-# print("G3:", G2.graph)
-# print("H:", H.graph)
-
-# BellmanFord sur G1 G2 G3
-s = G.setSource()
-i1, a1 = G1.BellmanFord(s)
-i2, a2 = G2.BellmanFord(s)
-i3, a3 = G3.BellmanFord(s)
-# Union des arborescences
-T = unionGraphs(a1, a2, a3)
-#print("T:", T.graph)
-
-# GloutonFas sur T
-ordre_tot = T.GloutonFas()
-H_bf = H.rearrangeEdges(ordre_tot)
-iH_tot,aH_tot = H_bf.BellmanFord(ordre_tot[0])
-iH, aH = H.BellmanFord(s)
-print("Itérations BF sur H :", iH)
-print("Itérations BF sur H avec ordre tot. :", iH_tot)
-
 def generate_leveled_graph(levels, vertices_per_level):
 	"""Génère un graphe par niveau avec des poids aléatoires pour toutes les arêtes"""
 	graph = Graph()
@@ -333,4 +304,50 @@ def generate_leveled_graph(levels, vertices_per_level):
 	graph.graph = sorted_list
 	return graph
 
-g = generate_leveled_graph(2500,4)
+
+# Generation d'un graphe aleatoire 
+G = generateGraph()
+# G = generate_leveled_graph(500,4) # à decommenter et commenter ligne au-dessus pour avoir le graphe à niveau
+G1 = generateGraphFromG(G)
+G2 = generateGraphFromG(G)
+G3 = generateGraphFromG(G)
+# G4 = generateGraphFromG(G)	# à décommenter pour avoir plus de graphes pour l'aprentissage de l'ordre
+# G5 = generateGraphFromG(G)
+# G6 = generateGraphFromG(G)
+# G7 = generateGraphFromG(G)
+# G8 = generateGraphFromG(G)
+# G9 = generateGraphFromG(G)
+H = generateGraphFromG(G)
+# print("G:", G3.graph)
+# print("G1:", G.graph)
+# print("G2:", G1.graph)
+# print("G3:", G2.graph)
+# print("H:", H.graph)
+
+# BellmanFord sur G1 G2 G3
+s = G.setSource()
+i1, a1 = G1.BellmanFord(s)
+i2, a2 = G2.BellmanFord(s)
+i3, a3 = G3.BellmanFord(s)
+# i4, a4 = G4.BellmanFord(s)	# à décommenter pour avoir plus de graphes pour l'aprentissage de l'ordre
+# i5, a5 = G5.BellmanFord(s)
+# i6, a6 = G6.BellmanFord(s)
+# i7, a7 = G7.BellmanFord(s)
+# i8, a8 = G8.BellmanFord(s)
+# i9, a9 = G9.BellmanFord(s)
+
+# Union des arborescences
+T = unionGraphs(a1, a2, a3)
+# T1 = unionGraphs(a1, a2, a3)	# à décommenter pour avoir plus de graphes pour l'aprentissage de l'ordre
+# T2 = unionGraphs(a4, a5, a6)
+# T3 = unionGraphs(a7, a8, a9)
+# T = unionGraphs(T1,T2,T3)
+#print("T:", T.graph)
+
+# GloutonFas sur T
+ordre_tot = T.GloutonFas()
+H_bf = H.rearrangeEdges(ordre_tot)
+iH_tot,aH_tot = H_bf.BellmanFord(ordre_tot[0])
+iH, aH = H.BellmanFord(s)
+print("Itérations BF sur H :", iH)
+print("Itérations BF sur H avec ordre tot. :", iH_tot)
